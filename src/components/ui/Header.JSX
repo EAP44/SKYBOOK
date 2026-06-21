@@ -13,11 +13,11 @@ export default function Header({ menuOpen, setMenuOpen }) {
         <nav className="hidden lg:flex items-center gap-7">
           {NAV_ITEMS.map((item) => (
             <a
-              key={item}
-              href="#"
+              key={item.element}
+              href={item.href}
               className="text-[13px] font-semibold tracking-wide text-[#231f20] hover:text-[#012169] transition-colors"
             >
-              {item}
+              {item.element}
             </a>
           ))}
         </nav>
