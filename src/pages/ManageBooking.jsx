@@ -20,10 +20,12 @@ import {
   X,
 } from "lucide-react";
 import Header from "../components/ui/Header.jsx";
-import { BOOKING, ACTIONS } from "../data/constData.js";
 import PageBanner from "../components/ui/PageBanner.jsx";
 import TopBar from "../components/ui/TopBar.jsx";
 import Footer from "../components/ui/Footer.jsx";
+import { useNavigate } from "react-router-dom";
+import LoginModal from "../components/ui/auth/LoginModal.jsx";
+import { useAuth } from "../context/AuthContext";
 
 const PROMO_ITEMS = [
   {
@@ -43,11 +45,11 @@ const PROMO_ITEMS = [
   },
 ];
 
-/* ---------------------------------------------------------------------- */
-/* SEARCH FORM                                                             */
-/* ---------------------------------------------------------------------- */
+/* ----------------------------SEARCH FORM------------------------------- */
 
-function SearchForm({ onFound, error, setError }) {
+function SearchForm({ error, setError, loading, setLoading, requireAuth }) {
+  const navigate = useNavigate();
+
   const [tab, setTab] = useState("pnr");
   const [lastName, setLastName] = useState("");
   const [refType, setRefType] = useState("pnr");
@@ -55,30 +57,57 @@ function SearchForm({ onFound, error, setError }) {
   const [skywardsId, setSkywardsId] = useState("");
   const [password, setPassword] = useState("");
 
-  const submitPnr = (e) => {
+  const submitPnr = async (e) => {
     e.preventDefault();
+
     if (!lastName.trim() || !refValue.trim()) {
       setError(
         "Veuillez renseigner votre nom de famille et votre numéro de référence.",
       );
       return;
     }
+
     setError(null);
-    onFound();
+    setLoading(true);
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      requireAuth(() => {
+        navigate("/booking/details");
+      });
+    } catch (err) {
+      setError("Une erreur est survenue.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const submitSkywards = (e) => {
+  const submitSkywards = async (e) => {
     e.preventDefault();
+
     if (!skywardsId.trim() || !password.trim()) {
       setError(
         "Veuillez renseigner votre identifiant Skybook Rewards et votre mot de passe.",
       );
       return;
     }
-    setError(null);
-    onFound();
-  };
 
+    setError(null);
+    setLoading(true);
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      requireAuth(() => {
+        navigate("/booking/details");
+      });
+    } catch (err) {
+      setError("Identifiant ou mot de passe incorrect.");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="bg-white border border-gray-200 rounded-sm shadow-sm">
       <div className="flex border-b border-gray-200">
@@ -254,9 +283,7 @@ function HelpPanel() {
   );
 }
 
-/* ---------------------------------------------------------------------- */
-/* PROMO ROW (shown before search)                                         */
-/* ---------------------------------------------------------------------- */
+/* --------------------------PROMO ROW---------------------------------- */
 
 function PromoRow() {
   return (
@@ -277,191 +304,77 @@ function PromoRow() {
   );
 }
 
-/* ---------------------------------------------------------------------- */
-/* BOOKING RESULT                                                          */
-/* ---------------------------------------------------------------------- */
-
-function BookingHeaderCard({ onReset }) {
-  return (
-    <div className="bg-white border border-gray-200 rounded-sm p-5 flex flex-wrap items-center justify-between gap-4">
-      <div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <p className="text-[12px] text-gray-500">Numéro de réservation</p>
-          <span className="text-sm font-extrabold text-[#231f20] tracking-wide">
-            {BOOKING.pnr}
-          </span>
-          <span className="flex items-center gap-1 bg-green-50 text-green-700 text-[11px] font-semibold px-2 py-0.5 rounded-full">
-            <CheckCircle2 size={12} /> {BOOKING.status}
-          </span>
-          {BOOKING.checkinOpen && (
-            <span className="flex items-center gap-1 bg-[#e6ecfa] text-[#012169] text-[11px] font-semibold px-2 py-0.5 rounded-full">
-              <Clock size={12} /> Enregistrement ouvert
-            </span>
-          )}
-        </div>
-        <p className="text-[13px] text-gray-500 mt-1">
-          {BOOKING.passenger} · Skybook Rewards {BOOKING.skywardsNo}
-        </p>
-      </div>
-      <button
-        onClick={onReset}
-        className="flex items-center gap-1.5 text-[13px] font-semibold text-gray-500 hover:text-[#012169] border border-gray-300 rounded px-3 py-1.5"
-      >
-        <X size={13} />
-        Nouvelle recherche
-      </button>
-    </div>
-  );
-}
-
-function SegmentCard({ segment }) {
-  return (
-    <div className="bg-white border border-gray-200 rounded-sm p-5">
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-        <p className="text-[12px] font-bold tracking-widest text-gray-400 uppercase">
-          {segment.label}
-        </p>
-        <span className="flex items-center gap-1 text-[12px] text-gray-500">
-          <Calendar size={12} /> {segment.date}
-        </span>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-4 md:gap-8">
-        <div className="flex items-center gap-2 text-[12px] font-semibold text-gray-500 w-20">
-          <Plane size={14} className="text-[#012169]" />
-          {segment.flightNo}
-        </div>
-
-        <div className="flex items-center gap-3 md:gap-6 flex-1 min-w-[220px]">
-          <div>
-            <p className="text-[16px] font-bold text-[#231f20]">
-              {segment.departTime}
-            </p>
-            <p className="text-[11px] text-gray-400">{segment.from}</p>
-          </div>
-          <div className="flex-1 flex flex-col items-center min-w-[60px]">
-            <p className="text-[11px] text-gray-400">{segment.duration}</p>
-            <div className="w-full h-px bg-gray-300 relative my-1.5">
-              <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-[#012169]" />
-            </div>
-            <p className="text-[11px] text-gray-400">{segment.aircraft}</p>
-          </div>
-          <div>
-            <p className="text-[16px] font-bold text-[#231f20]">
-              {segment.arriveTime}
-            </p>
-            <p className="text-[11px] text-gray-400">{segment.to}</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid sm:grid-cols-3 gap-3 mt-4 pt-4 border-t border-gray-100 text-[12px] text-gray-500">
-        <span className="flex items-center gap-1.5">
-          <MapPin size={12} /> {segment.terminal}
-        </span>
-        <span className="flex items-center gap-1.5">
-          <Armchair size={12} /> Siège : {segment.seat}
-        </span>
-        <span className="flex items-center gap-1.5">
-          {segment.checkedIn ? (
-            <>
-              <CheckCircle2 size={12} className="text-green-600" /> Enregistré
-            </>
-          ) : (
-            <>
-              <AlertCircle size={12} /> Pas encore enregistré
-            </>
-          )}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function ActionsGrid() {
-  return (
-    <div className="bg-white border border-gray-200 rounded-sm p-5">
-      <p className="text-sm font-bold text-[#231f20] mb-4">
-        Gérer votre voyage
-      </p>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {ACTIONS.map(({ icon: Icon, label, note }) => (
-          <button
-            key={label}
-            className="flex flex-col items-start gap-2 border border-gray-200 rounded-sm p-3.5 text-left hover:border-[#012169] hover:bg-[#e6ecfa] transition-colors"
-          >
-            <span className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center">
-              <Icon size={16} className="text-[#012169]" />
-            </span>
-            <span className="text-[12.5px] font-semibold text-[#231f20] leading-snug">
-              {label}
-            </span>
-            <span className="text-[11px] text-gray-400 leading-snug">
-              {note}
-            </span>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function BookingResult({ onReset }) {
-  return (
-    <div className="space-y-5">
-      <BookingHeaderCard onReset={onReset} />
-      <div className="grid md:grid-cols-2 gap-5">
-        {BOOKING.segments.map((s) => (
-          <SegmentCard key={s.id} segment={s} />
-        ))}
-      </div>
-      <ActionsGrid />
-    </div>
-  );
-}
-
-
-
-/* ---------------------------------------------------------------------- */
-/* PAGE                                                                     */
-/* ---------------------------------------------------------------------- */
+/* ------------------------------PAGE--------------------------------- */
 
 export default function ManageBooking() {
-  const [found, setFound] = useState(false);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const { isAuthenticated } = useAuth();
+  const [openLogin, setOpenLogin] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null);
+
+  const requireAuth = (action) => {
+    if (!isAuthenticated) {
+      setPendingAction(() => action);
+      setOpenLogin(true);
+      return;
+    }
+
+    action();
+  };
 
   return (
     <div className="min-h-screen bg-[#f7f6f4] font-sans text-[#231f20]">
-      <TopBar/>
+      <TopBar />
       <Header />
+
       <PageBanner
         title="Gérer une réservation / s'enregistrer"
         description="Consultez votre réservation, enregistrez-vous en ligne, choisissez votre siège ou modifiez votre vol en quelques clics."
       />
 
       <div className="max-w-6xl mx-auto px-4 py-8 mb-39">
-        {!found ? (
-          <>
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="md:col-span-2">
-                <SearchForm
-                  onFound={() => setFound(true)}
-                  error={error}
-                  setError={setError}
-                />
-              </div>
-              <div>
-                <HelpPanel />
-              </div>
-            </div>
-            <PromoRow />
-          </>
-        ) : (
-          <BookingResult onReset={() => setFound(false)} />
-        )}
-      </div>
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="md:col-span-2">
+            <SearchForm
+              error={error}
+              setError={setError}
+              loading={loading}
+              setLoading={setLoading}
+              requireAuth={requireAuth}
+            />
+          </div>
 
-      <Footer/>
+          <div>
+            <HelpPanel />
+          </div>
+        </div>
+
+        <PromoRow />
+      </div>
+      {loading && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
+          <div className="bg-white p-8 rounded-lg shadow-lg flex flex-col items-center gap-4">
+            <div className="w-12 h-12 border-4 border-[#012169] border-t-transparent rounded-full animate-spin" />
+            <p className="text-[#012169] font-semibold">
+              Recherche de votre réservation...
+            </p>
+          </div>
+        </div>
+      )}
+      <LoginModal
+        isOpen={openLogin}
+        onClose={() => setOpenLogin(false)}
+        onSuccess={() => {
+          setOpenLogin(false);
+
+          if (pendingAction) {
+            pendingAction();
+            setPendingAction(null);
+          }
+        }}
+      />
+      <Footer />
     </div>
   );
 }
