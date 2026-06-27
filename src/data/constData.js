@@ -197,7 +197,7 @@ const FLIGHT = {
   arriveTime: "13:25",
   duration: "7 h 50",
   aircraft: "Boeing 777-300ER",
-  passenger: "M. Ayoub Benali",
+  passenger: "M. Ayoub ELAOUADI",
 };
 
 const SERVICE_CATEGORIES = [
@@ -297,7 +297,7 @@ const BOOKING = {
   pnr: "X7K9QP",
   status: "Confirmée",
   checkinOpen: true,
-  passenger: "M. Ayoub Benali",
+  passenger: "M. Ayoub ELAOUADI",
   skywardsNo: "SB 220 481 933",
   segments: [
     {

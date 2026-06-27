@@ -58,7 +58,7 @@ const INITIAL_PASSENGERS = [
   {
     id: 1,
     firstName: "Ayoub",
-    lastName: "Benali",
+    lastName: "ELAOUADI",
     type: "Adulte",
     passport: "AB1234567",
     seatOutbound: "24K",
@@ -66,7 +66,7 @@ const INITIAL_PASSENGERS = [
   },
 ];
 
-const INITIAL_CONTACT = { email: "ayoub.benali@example.com", phone: "+212 6 12 34 56 78" };
+const INITIAL_CONTACT = { email: "ayoub.elaouadi@example.com", phone: "+212 6 12 34 56 78" };
 
 const INITIAL_SERVICES = [
   { id: "s1", label: "Repas végétarien", price: 0 },
